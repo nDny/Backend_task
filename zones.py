@@ -4,7 +4,7 @@ import logging
 import matplotlib.path as mplib
 
 class Zones(object):
-
+    TIME_LIMIT = 10
 
     def __init__(self, conn):
         self.zones = {}

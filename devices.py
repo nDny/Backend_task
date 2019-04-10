@@ -16,10 +16,10 @@ class Devices(object):
         rows = cur.fetchall()
 
         for device in rows: 
-            if device not in self.devices:
+            if device[0] not in self.devices:
                 self.devices.append(device[0])
-                    
-        #logging.info("\nNumber of devices: " + str(len(self.devices)))
+        
+        logging.info("\nNumber of devices: " + str(len(self.devices)))
 
     def get_device_info(self, device_id):
         '''

@@ -10,31 +10,41 @@ def insert_zone_visit(conn, zoneInfo):
 
 def execute_program(conn):
     #Initialize
-    zon = zones.Zones(conn)
-    zon.populate_zone_list()
+    zone = zones.Zones(conn)
+    zone.populate_zone_list()
     dev = devices.Devices(conn)
     dev.populate_device_list()
-
+    logging.info("\nLists populated\nStarting device scan")
     #Other stuff
 
+    
+    count = 0
     for device in dev.devices:
+        count += 1
+        print("Device #"+str(count),device)
         points, timestamps = dev.get_device_info(device)
-        points = zon.extract_coordinates(points)
+        points = zone.extract_coordinates(points)
         points = [[float(j) for j in i] for i in points]
-        results = zon.check_specific_zones(points, timestamps, device)
+        results = zone.check_specific_zones(points, timestamps, device)
 
+        print("Inserting results into database")
         for res in results:
             insert_zone_visit(conn, res)
 
+        if count > 50:
+            break
+    
+
     '''
     points, timestamps = dev.get_device_info(dev.devices[78])
-    points = zon.extract_coordinates(points)
+    points = zone.extract_coordinates(points)
     points = [[float(j) for j in i] for i in points]
 
-    results = zon.check_specific_zones(points, timestamps, dev.devices[78])
+    results = zone.check_specific_zones(points, timestamps, dev.devices[78])
     for res in results:
         insert_zone_visit(conn, res)
     '''
+
 
     return
 
