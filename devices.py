@@ -7,6 +7,9 @@ class Devices(object):
         self.conn = conn
 
     def populate_device_list(self):
+        '''
+        Create a list of all unique device ids
+        '''
         cur = self.conn.cursor()
         cur.execute("SELECT device_id FROM positions")
 
@@ -19,11 +22,16 @@ class Devices(object):
         #logging.info("\nNumber of devices: " + str(len(self.devices)))
 
     def get_device_info(self, device_id):
+        '''
+        Get the timestamps and positions of given device, returned as a tuple
+        '''
         cur = self.conn.cursor()
         cur.execute("SELECT timestamp, position FROM positions WHERE device_id = ?", (device_id,))
 
         rows = cur.fetchall()
-        points = []
+        timestamps = []
+        points = ""
         for row in rows:
-            points.append(row[1])
-        return points
+            timestamps.append(row[0])
+            points += (row[1])
+        return points, timestamps
