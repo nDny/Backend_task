@@ -40,8 +40,8 @@ def execute_program(conn):
         for res in results:
             insert_zone_visit(conn, res)
 
-        if count > 20:
-            break
+        #if count > 20:
+        #    break
     
     print("Execution finished successfully")
     return

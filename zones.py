@@ -49,7 +49,10 @@ class Zones(object):
 
     
     def check_specific_zones(self, pointList, timestamps, device_id):
-        zoneInfo = []
+        '''
+        Compare device positions with zone polygons
+        '''
+        deviceInfo = []
         #Loop every zone 
         for zoneID, zone in self.zones.items():
             time_spent = []
@@ -67,9 +70,9 @@ class Zones(object):
             if len(time_spent) == 0:
                 continue
             elif len(time_spent) > 1:
-                zoneInfo.append([device_id, int(time_spent[0]), int(time_spent[-1]), int(zoneID)])
+                deviceInfo.append([device_id, int(time_spent[0]), int(time_spent[-1]), int(zoneID)])
             elif len(time_spent) == 1:
-                zoneInfo.append([device_id, int(time_spent[0]), int(time_spent[0]), int(zoneID)])
+                deviceInfo.append([device_id, int(time_spent[0]), int(time_spent[0]), int(zoneID)])
             else:
                 logging.warning("Failed to recognize time data")
-        return zoneInfo
+        return deviceInfo
