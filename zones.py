@@ -4,7 +4,7 @@ import logging
 import matplotlib.path as mplib
 
 class Zones(object):
-    TIME_LIMIT = 10
+    TIME_LIMIT = 6000
 
     def __init__(self, conn):
         self.zones = {}
@@ -57,6 +57,10 @@ class Zones(object):
             for i in range(len(pointList)):
                 if self.check_in_zone(zone, pointList[i]):
                     time_spent.append(timestamps[i])
+                    if len(time_spent) > 1: 
+                        if (time_spent[len(time_spent)-1] - time_spent[0]) > self.TIME_LIMIT:
+                            logging.info("Time limit reached") 
+                            break
             if len(time_spent) == 0:
                 continue
             elif len(time_spent) > 1:
@@ -68,8 +72,3 @@ class Zones(object):
             else:
                 logging.warning("Failed to recognize time data")
         return zoneInfo
-
-
-    def insert_zone_visit(self, zoneInfo):
-        self.conn.execute("INSERT INTO zone_visits(device_id,start_time,end_time,zone_id) VALUES(?,?,?,?)", zoneInfo)
-        return

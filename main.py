@@ -31,7 +31,7 @@ def execute_program(conn):
         for res in results:
             insert_zone_visit(conn, res)
 
-        if count > 50:
+        if count > 9:
             break
     
 
