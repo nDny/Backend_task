@@ -4,6 +4,10 @@ import logging
 import devices
 import zones
 
+def insert_zone_visit(conn, zoneInfo):
+    conn.execute("INSERT INTO zone_visits(device_id,start_time,end_time,zone_id) VALUES(?,?,?,?)", zoneInfo)
+    return
+
 def execute_program(conn):
     #Initialize
     zon = zones.Zones(conn)
@@ -13,31 +17,24 @@ def execute_program(conn):
 
     #Other stuff
 
-    #for device in dev.devices:
-    #    points = timestamps = dev.get_device_info(device)
-    #    points = zon.extract_coordinates(points)
-    #    points = [[float(j) for j in i] for i in points]
+    for device in dev.devices:
+        points, timestamps = dev.get_device_info(device)
+        points = zon.extract_coordinates(points)
+        points = [[float(j) for j in i] for i in points]
+        results = zon.check_specific_zones(points, timestamps, device)
+
+        for res in results:
+            insert_zone_visit(conn, res)
 
     '''
-    points, timestamps = dev.get_device_info(dev.devices[900])
+    points, timestamps = dev.get_device_info(dev.devices[78])
     points = zon.extract_coordinates(points)
     points = [[float(j) for j in i] for i in points]
 
-    zon.check_specific_zones(points, timestamps)
-    print(str(len(points)))
+    results = zon.check_specific_zones(points, timestamps, dev.devices[78])
+    for res in results:
+        insert_zone_visit(conn, res)
     '''
-
-    '''
-    times = []
-    for i in range(len(points)):
-        if (zon.check_in_zone(zon.zones[4], (points[i][0], points[i][1]))):
-            times.append(timestamps[i])
-    
-    if len(times) > 2:
-        totaltime = times[-1] - times[0]
-        print(totaltime)
-    '''
-
 
     return
 

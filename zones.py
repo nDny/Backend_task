@@ -50,7 +50,8 @@ class Zones(object):
         return(polyPath.contains_point(point))
 
     
-    def check_specific_zones(self, pointList, timestamps):
+    def check_specific_zones(self, pointList, timestamps, device_id):
+        zoneInfo = []
         for zoneID, zone in self.zones.items():
             time_spent = []
             for i in range(len(pointList)):
@@ -59,9 +60,16 @@ class Zones(object):
             if len(time_spent) == 0:
                 continue
             elif len(time_spent) > 1:
-                print("Zone:", zoneID, "--- Starttime:", time_spent[0], ", Endtime:", time_spent[-1])
+                zoneInfo.append([device_id, int(time_spent[0]), int(time_spent[-1]), int(zoneID)])
+                #print("Zone:", zoneID, "--- Starttime:", time_spent[0], ", Endtime:", time_spent[-1])
             elif len(time_spent) == 1:
-                print("Zone:", zoneID,"--- Start- and endtime: ", time_spent[0])
+                zoneInfo.append([device_id, int(time_spent[0]), int(time_spent[0]), int(zoneID)])
+                #print("Zone:", zoneID,"--- Start- and endtime: ", time_spent[0])
             else:
                 logging.warning("Failed to recognize time data")
+        return zoneInfo
+
+
+    def insert_zone_visit(self, zoneInfo):
+        self.conn.execute("INSERT INTO zone_visits(device_id,start_time,end_time,zone_id) VALUES(?,?,?,?)", zoneInfo)
         return
