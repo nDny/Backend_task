@@ -21,11 +21,9 @@ class Zones(object):
         rows = cur.fetchall()
 
         #Remove the first and last character per polygon string since they are always '(' and ')'
+        #and pass it to extract_coordinates to get it as a list
         for row in rows:
             self.zones[row[0]] = self.extract_coordinates(row[1][1:-1])
-        
-        #for key, val in zoneInfo.items():
-        #    self.zones.append(self.extract_coordinates(val))
 
 
     def extract_coordinates(self, coords):
@@ -52,23 +50,27 @@ class Zones(object):
     
     def check_specific_zones(self, pointList, timestamps, device_id):
         zoneInfo = []
+        #Loop every zone 
         for zoneID, zone in self.zones.items():
             time_spent = []
+            #Loop every position of this device
             for i in range(len(pointList)):
+                #Check if this position is somewhere in the current zone
                 if self.check_in_zone(zone, pointList[i]):
                     time_spent.append(timestamps[i])
                     if len(time_spent) > 1: 
+                        #Check to see if time spent in the zone exceeds the timeout limit
                         if (time_spent[len(time_spent)-1] - time_spent[0]) > self.TIME_LIMIT:
-                            logging.info("Time limit reached") 
+                            logging.debug("Time limit reached")
+                            #Break current zone loop since device has "timed out"
                             break
+            #Add final results to list
             if len(time_spent) == 0:
                 continue
             elif len(time_spent) > 1:
                 zoneInfo.append([device_id, int(time_spent[0]), int(time_spent[-1]), int(zoneID)])
-                #print("Zone:", zoneID, "--- Starttime:", time_spent[0], ", Endtime:", time_spent[-1])
             elif len(time_spent) == 1:
                 zoneInfo.append([device_id, int(time_spent[0]), int(time_spent[0]), int(zoneID)])
-                #print("Zone:", zoneID,"--- Start- and endtime: ", time_spent[0])
             else:
                 logging.warning("Failed to recognize time data")
         return zoneInfo

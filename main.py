@@ -1,6 +1,7 @@
 import sqlite3
 from sqlite3 import Error
 import logging
+import sys
 import devices
 import zones
 
@@ -10,42 +11,33 @@ def insert_zone_visit(conn, zoneInfo):
 
 def execute_program(conn):
     #Initialize
+    print("Initializing")
+    logging.debug("Debug mode enabled")
+    logging.info("Retrieving data from database")
     zone = zones.Zones(conn)
     zone.populate_zone_list()
     dev = devices.Devices(conn)
     dev.populate_device_list()
-    logging.info("\nLists populated\nStarting device scan")
-    #Other stuff
+    logging.info("\nLists populated\nIterating over devices and zones...")
 
-    
+    #Run every known position for each device through each of the zone polygons
     count = 0
     for device in dev.devices:
         count += 1
-        print("Device #"+str(count),device)
+        logging.info("Device #"+str(count)+" "+device)
         points, timestamps = dev.get_device_info(device)
         points = zone.extract_coordinates(points)
         points = [[float(j) for j in i] for i in points]
         results = zone.check_specific_zones(points, timestamps, device)
 
-        print("Inserting results into database")
+        logging.info("Inserting into to database")
         for res in results:
             insert_zone_visit(conn, res)
 
-        if count > 9:
-            break
+        #if count > 9:
+        #    break
     
-
-    '''
-    points, timestamps = dev.get_device_info(dev.devices[78])
-    points = zone.extract_coordinates(points)
-    points = [[float(j) for j in i] for i in points]
-
-    results = zone.check_specific_zones(points, timestamps, dev.devices[78])
-    for res in results:
-        insert_zone_visit(conn, res)
-    '''
-
-
+    print("Execution finished successfully")
     return
 
 
@@ -63,12 +55,25 @@ def create_connection(db_file):
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "-v" or sys.argv[1] == "--verbose":
+            print("Verbose mode enabled")
+            logging.basicConfig(level=logging.DEBUG)
+
+        elif sys.argv[1] == "-h" or sys.argv[1] == "--help":
+            print("Add option -v or --verbose for output information")
+            logging.basicConfig(level=logging.WARNING)
+    else:
+        print("No args given, output will be silent. Add -h or --help for help")
+        logging.basicConfig(level=logging.WARNING)
+
     database = "./sensor_data.db"
     conn = create_connection(database)
 
     with conn:
         execute_program(conn)
+    
+    conn.close()
 
 if __name__ == '__main__':
     main()
