@@ -4,7 +4,7 @@ import logging
 import matplotlib.path as mplib
 
 class Zones(object):
-    TIME_LIMIT = 6000
+    TIMEOUT_LIMIT = 5000
 
     def __init__(self, conn):
         self.zones = {}
@@ -53,16 +53,15 @@ class Zones(object):
         #Loop every zone 
         for zoneID, zone in self.zones.items():
             time_spent = []
-            #Loop every position of this device
+            #Loop every position of this device (once for every zone)
             for i in range(len(pointList)):
                 #Check if this position is somewhere in the current zone
                 if self.check_in_zone(zone, pointList[i]):
                     time_spent.append(timestamps[i])
                     if len(time_spent) > 1: 
-                        #Check to see if time spent in the zone exceeds the timeout limit
-                        if (time_spent[len(time_spent)-1] - time_spent[0]) > self.TIME_LIMIT:
-                            logging.debug("Time limit reached")
-                            #Break current zone loop since device has "timed out"
+                        #Move to next zone if 2 adjacent timestamps exceeds the timeout limit
+                        if (time_spent[len(time_spent)-1] - time_spent[len(time_spent)-2]) > self.TIMEOUT_LIMIT:
+                            logging.debug("Zone: "+str(zoneID)+" timed out")
                             break
             #Add final results to list
             if len(time_spent) == 0:
