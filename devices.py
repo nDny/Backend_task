@@ -6,6 +6,7 @@ class Devices(object):
         self.devices = []
         self.conn = conn
 
+
     def populate_device_list(self):
         '''
         Create a list of all unique device ids
@@ -20,6 +21,7 @@ class Devices(object):
                 self.devices.append(device[0])
         
         logging.info("\nNumber of devices: " + str(len(self.devices)))
+
 
     def get_device_info(self, device_id):
         '''

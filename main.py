@@ -5,23 +5,29 @@ import sys
 import devices
 import zones
 
+
 def insert_zone_visit(conn, zoneInfo):
     conn.execute("INSERT INTO zone_visits(device_id,start_time,end_time,zone_id) VALUES(?,?,?,?)", zoneInfo)
     return
 
 def execute_program(conn):
+    '''
+    Iterate everything to achieve the final result
+    '''
     #Initialize
     print("Initializing")
     logging.debug("Debug mode enabled")
     logging.info("Retrieving data from database")
+
     zone = zones.Zones(conn)
     zone.populate_zone_list()
     dev = devices.Devices(conn)
     dev.populate_device_list()
-    logging.info("\nLists populated\nIterating over devices and zones...")
+    logging.info("\nLists populated\n")
 
     #Run every known position for each device through each of the zone polygons
     count = 0
+    print("Running")
     for device in dev.devices:
         count += 1
         logging.info("Device #"+str(count)+" "+device)
@@ -34,8 +40,8 @@ def execute_program(conn):
         for res in results:
             insert_zone_visit(conn, res)
 
-        #if count > 9:
-        #    break
+        if count > 20:
+            break
     
     print("Execution finished successfully")
     return
@@ -55,6 +61,9 @@ def create_connection(db_file):
 
 
 def main():
+    '''
+    Start program, check for args
+    '''
     if len(sys.argv) > 1:
         if sys.argv[1] == "-v" or sys.argv[1] == "--verbose":
             print("Verbose mode enabled")
@@ -67,7 +76,7 @@ def main():
         print("No args given, output will be silent. Add -h or --help for help")
         logging.basicConfig(level=logging.WARNING)
 
-    database = "./sensor_data.db"
+    database = "./platform_engineer_2018_interview.db"
     conn = create_connection(database)
 
     with conn:
