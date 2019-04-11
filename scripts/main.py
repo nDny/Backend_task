@@ -15,7 +15,7 @@ def execute_program(conn):
     Iterate everything to achieve the final result
     '''
     #Initialize
-    print("Initializing")
+    logging.info("Initializing")
     logging.debug("Debug mode enabled")
     logging.info("Retrieving data from database")
 
@@ -27,7 +27,7 @@ def execute_program(conn):
 
     #Run every known position for each device through each of the zone polygons
     count = 0
-    print("Running")
+    logging.info("Running")
     for device in dev.devices:
         count += 1
         logging.info("Device #"+str(count)+" "+device)
@@ -37,14 +37,14 @@ def execute_program(conn):
         results = zone.check_specific_zones(points, timestamps, device)
 
         if results:
-            logging.debug("Inserting device #" + str(count) + " into to database")
+            logging.debug("Inserting device #" + str(count) + " into database")
         for res in results:
             insert_zone_visit(conn, res)
 
         #if count > 9:
         #    break
     
-    print("Execution finished successfully")
+    logging.info("Execution finished successfully")
     return
 
 
@@ -74,11 +74,11 @@ def main():
             print("Add option -v or --verbose for output information")
             logging.basicConfig(level=logging.WARNING)
     else:
-        print("No args given, output will be silent. Add -h or --help for help")
+        print("No args given, output will be silent.")
         logging.basicConfig(level=logging.WARNING)
 
     #URL to database
-    database = "../data/sensor_data.db"
+    database = "./platform_engineer_2018_interview.db"
     conn = create_connection(database)
 
     with conn:
