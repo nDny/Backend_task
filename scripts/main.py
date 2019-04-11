@@ -5,6 +5,7 @@ import sys
 import devices
 import zones
 
+DATABASE_PATH = "./platform_engineer_2018_interview.db"
 
 def insert_zone_visit(conn, zoneInfo):
     conn.execute("INSERT INTO zone_visits(device_id,start_time,end_time,zone_id) VALUES(?,?,?,?)", zoneInfo)
@@ -78,7 +79,7 @@ def main():
         logging.basicConfig(level=logging.WARNING)
 
     #URL to database
-    database = "./platform_engineer_2018_interview.db"
+    database = DATABASE_PATH
     conn = create_connection(database)
 
     with conn:

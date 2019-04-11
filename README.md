@@ -6,6 +6,8 @@ Populate database based on certain criteria
 
 Built with python 3.6, using Numpy and Matplotlib libraries.
 
+Edit database path!
+
 
 Usage:
 
