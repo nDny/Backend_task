@@ -36,11 +36,12 @@ def execute_program(conn):
         points = [[float(j) for j in i] for i in points]
         results = zone.check_specific_zones(points, timestamps, device)
 
-        logging.info("Inserting into to database")
+        if results:
+            logging.debug("Inserting device #" + str(count) + " into to database")
         for res in results:
             insert_zone_visit(conn, res)
 
-        #if count > 20:
+        #if count > 9:
         #    break
     
     print("Execution finished successfully")
@@ -76,7 +77,8 @@ def main():
         print("No args given, output will be silent. Add -h or --help for help")
         logging.basicConfig(level=logging.WARNING)
 
-    database = "./platform_engineer_2018_interview.db"
+    #URL to database
+    database = "../data/sensor_data.db"
     conn = create_connection(database)
 
     with conn:

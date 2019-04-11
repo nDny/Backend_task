@@ -24,6 +24,7 @@ class Zones(object):
         #and pass it to extract_coordinates to get it as a list
         for row in rows:
             self.zones[row[0]] = self.extract_coordinates(row[1][1:-1])
+        print("No of zones:",len(self.zones))
 
 
     def extract_coordinates(self, coords):
