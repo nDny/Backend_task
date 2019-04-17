@@ -1,15 +1,16 @@
 import sqlite3
-from sqlite3 import Error
 import logging
 import sys
 import devices
 import zones
 
-DATABASE_PATH = "./platform_engineer_2018_interview.db"
+DATABASE_PATH = "../platform_engineer_2018_interview.db"
+
 
 def insert_zone_visit(conn, zoneInfo):
     conn.execute("INSERT INTO zone_visits(device_id,start_time,end_time,zone_id) VALUES(?,?,?,?)", zoneInfo)
     return
+
 
 def execute_program(conn):
     '''
@@ -26,22 +27,21 @@ def execute_program(conn):
     dev.populate_device_list()
     logging.info("\nLists populated\n")
 
-    #Run every known position for each device through each of the zone polygons
+    # Run every known position for each device through each of the zone polygons
     count = 0
     logging.info("Running")
     for device in dev.devices:
         count += 1
-        logging.info("Device #"+str(count)+" "+device)
+        logging.info("Checking device #"+str(count)+" "+device)
         points, timestamps = dev.get_device_info(device)
         points = zone.extract_coordinates(points)
         points = [[float(j) for j in i] for i in points]
-        results = zone.check_specific_zones(points, timestamps, device)
+        results = zone.get_final_device_data(points, timestamps, device)
 
         if results:
             logging.debug("Inserting device #" + str(count) + " into database")
         for res in results:
             insert_zone_visit(conn, res)
-
         #if count > 9:
         #    break
     
@@ -54,10 +54,10 @@ def create_connection(db_file):
     Create connection with the sqlite3 database
     '''
     try:
-        conn = sqlite3.connect(db_file)
+        conn = sqlite3.connect('file:'+db_file+'?mode=rw', uri=True)
         return conn
-    except Error as e:
-        logging.critical("Failed to access the database!")
+    except sqlite3.Error as e:
+        logging.critical("Failed to access the database. Is the path correct?")
         print(e)
     return None
 
@@ -86,6 +86,7 @@ def main():
         execute_program(conn)
     
     conn.close()
+
 
 if __name__ == '__main__':
     main()
