@@ -1,4 +1,5 @@
 __pycache__/
+.vscode/
 
 platform_engineer_2018_interview_populated.db
 platform_engineer_2018_interview.db
