@@ -16,16 +16,12 @@ class Zones(object):
         '''
         Create a list of all available zones
         '''
-        rows = None
-        try:
-            cur = self.conn.cursor()
-            cur.execute("SELECT id, polygon FROM zones")
-            rows = cur.fetchall()
-        except sqlite3.Error as e:
-            logging.warning("SQL query failed: " + e)
-
+        cur = self.conn.cursor()
+        cur.execute("SELECT id, polygon FROM zones")
+        rows = cur.fetchall()
+        
         # Remove the first and last character per polygon string since they are always '(' and ')'
-        # and pass it to extract_coordinates to get it as a list
+        # and pass it to extract_coordinates() to get it as a list
         for row in rows:
             self.zones[row[0]] = self.extract_coordinates(row[1][1:-1])
 

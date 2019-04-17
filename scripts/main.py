@@ -7,9 +7,9 @@ import zones
 DATABASE_PATH = "../platform_engineer_2018_interview.db"
 
 
-def insert_zone_visit(conn, zoneInfo):
+def insert_zone_visit(conn, zone_info):
     try:
-        conn.execute("INSERT INTO zone_visits(device_id,start_time,end_time,zone_id) VALUES(?,?,?,?)", zoneInfo)
+        conn.execute("INSERT INTO zone_visits(device_id,start_time,end_time,zone_id) VALUES(?,?,?,?)", zone_info)
     except sqlite3.Error as e:
         logging.warning("SQL query failed: " + e)
 
