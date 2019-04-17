@@ -1,6 +1,7 @@
 import re
 import numpy
 import logging
+import sqlite3
 import matplotlib.path as mplib
 
 
@@ -15,10 +16,13 @@ class Zones(object):
         '''
         Create a list of all available zones
         '''
-        cur = self.conn.cursor()
-        cur.execute("SELECT id, polygon FROM zones")
-
-        rows = cur.fetchall()
+        rows = None
+        try:
+            cur = self.conn.cursor()
+            cur.execute("SELECT id, polygon FROM zones")
+            rows = cur.fetchall()
+        except sqlite3.Error as e:
+            logging.warning("SQL query failed: " + e)
 
         # Remove the first and last character per polygon string since they are always '(' and ')'
         # and pass it to extract_coordinates to get it as a list
@@ -47,44 +51,48 @@ class Zones(object):
 
 
     def get_final_device_data(self, point_list, timestamps, device_id):
-        dev_data = []
-        final_device_info = []
+        device_data = []
+        final_device_data = []
         curr_zone = 0
         first_stamp = 0
         last_stamp = 0
 
+        # Create a list of timestamps and the corresponding zone
         for point, timestamp in zip(point_list, timestamps):
             curr_zone = self.iterate_zones(point)
             # Skip if point is outside a zone
             if curr_zone is None:
                 continue
-            dev_data.append([curr_zone, timestamp])
+            device_data.append([curr_zone, timestamp])
 
-        for i in range(len(dev_data)):
+        # Check zone visits and extract appropriate data
+        for i in range(len(device_data)):
             # First case
             if i < 1:
-                first_stamp = dev_data[i][1]
+                first_stamp = device_data[i][1]
 
             # Check if device moved to different zone
-            if dev_data[i][0] != dev_data[i-1][0]:
-                last_stamp = dev_data[i][1]
-                final_device_info.append([device_id, first_stamp, last_stamp, dev_data[i-1][0]])
-                first_stamp = dev_data[i][1]
+            if device_data[i][0] != device_data[i-1][0]:
+                last_stamp = device_data[i][1]
+                final_device_data.append([device_id, first_stamp, last_stamp, device_data[i-1][0]])
+                first_stamp = device_data[i][1]
             
-            # Check if device timed out, then set i to the start of the next zone
-            if dev_data[i][1] - first_stamp > self.TIMEOUT_LIMIT:
-                last_stamp = dev_data[i][1]
-                final_device_info.append([device_id, first_stamp, last_stamp, dev_data[i-1][0]])
-
-                for j in range(i, len(dev_data)):
-                    if dev_data[i][0] != dev_data[j][0]:
-                        first_stamp = dev_data[j][1]
+            # Check if device timed out 
+            if device_data[i][1] - first_stamp > self.TIMEOUT_LIMIT:
+                logging.debug("Device " + device_id + " timed out in zone " + str(device_data[i][0]))
+                last_stamp = device_data[i][1]
+                final_device_data.append([device_id, first_stamp, last_stamp, device_data[i-1][0]])
+                # Set i to the start of the next zone
+                for j in range(i, len(device_data)):
+                    if device_data[i][0] != device_data[j][0]:
+                        first_stamp = device_data[j][1]
                         i = j
                         break
-        return final_device_info
+        return final_device_data
 
 
     def iterate_zones(self, point):
+        # Check which zone a given point is in
         for zone_id, zone in self.zones.items():
             if self.check_in_zone(zone, point):
                 return zone_id

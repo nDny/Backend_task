@@ -8,8 +8,10 @@ DATABASE_PATH = "../platform_engineer_2018_interview.db"
 
 
 def insert_zone_visit(conn, zoneInfo):
-    conn.execute("INSERT INTO zone_visits(device_id,start_time,end_time,zone_id) VALUES(?,?,?,?)", zoneInfo)
-    return
+    try:
+        conn.execute("INSERT INTO zone_visits(device_id,start_time,end_time,zone_id) VALUES(?,?,?,?)", zoneInfo)
+    except sqlite3.Error as e:
+        logging.warning("SQL query failed: " + e)
 
 
 def execute_program(conn):
