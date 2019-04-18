@@ -12,9 +12,13 @@ class Devices(object):
         '''
         Create a list of all unique device ids
         '''
-        cur = self.conn.cursor()
-        cur.execute("SELECT device_id FROM positions")
-        rows = cur.fetchall()
+        rows = None
+        try:
+            cur = self.conn.cursor()
+            cur.execute("SELECT device_id FROM positions")
+            rows = cur.fetchall()
+        except sqlite3.Error as e:
+            logging.warning("SQL query failed: " + e)
 
         for device in rows: 
             if device[0] not in self.devices:
@@ -27,10 +31,14 @@ class Devices(object):
         '''
         Get the timestamps and positions of given device, returned as a tuple
         '''
-        cur = self.conn.cursor()
-        cur.execute("SELECT timestamp, position FROM positions WHERE device_id = ?", (device_id,))
+        rows = None
+        try:
+            cur = self.conn.cursor()
+            cur.execute("SELECT timestamp, position FROM positions WHERE device_id = ?", (device_id,))
 
-        rows = cur.fetchall()
+            rows = cur.fetchall()
+        except sqlite3.Error as e:
+            logging.warning("SQL query failed: " + e)
 
         timestamps = []
         points = ""

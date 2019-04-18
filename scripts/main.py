@@ -29,7 +29,7 @@ def execute_program(conn):
     dev.populate_device_list()
     logging.info("\nLists populated\n")
 
-    # Run every known position for each device through each of the zone polygons
+    # Check if device positions are in a zone and gather the necessary data
     count = 0
     logging.info("Running")
     for device in dev.devices:
@@ -44,8 +44,6 @@ def execute_program(conn):
             logging.debug("Inserting device #" + str(count) + " into database")
         for res in results:
             insert_zone_visit(conn, res)
-        #if count > 9:
-        #    break
     
     logging.info("Execution finished successfully")
     return
